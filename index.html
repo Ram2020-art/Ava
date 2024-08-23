@@ -161,7 +161,6 @@
 
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     const synthesis = window.speechSynthesis;
-
     const felix = document.getElementById('felix');
     const responseFrame = document.querySelector('.response-frame');
     const captionFrame = document.querySelector('.caption-frame');
@@ -171,6 +170,8 @@
     recognition.interimResults = false;
     recognition.lang = 'en-US';
     recognition.continuous = true;
+
+    let silenceTimeout;
 
     const responses = {
       hello: [
@@ -220,7 +221,13 @@
       return responseText;
     }
 
+    function startListening() {
+      recognition.start();
+    }
+
     recognition.onresult = (event) => {
+      clearTimeout(silenceTimeout);
+
       const transcript = event.results[0][0].transcript.toLowerCase();
       console.log('User said:', transcript);
 
@@ -238,7 +245,16 @@
 
         responseFrame.classList.add('active');
         felix.classList.add('active');
+
+        // Hide response and caption frames after response
+        speech.onend = () => {
+          responseFrame.classList.remove('active');
+          captionFrame.classList.remove('active');
+        };
       }
+
+      // Set a timeout to start listening again after a pause
+      silenceTimeout = setTimeout(startListening, 3000); // Restart listening after 3 seconds of silence
     };
 
     recognition.onerror = (event) => {
@@ -246,20 +262,19 @@
     };
 
     recognition.onend = () => {
-      recognition.start(); // Restart recognition when it ends
+      console.log('Speech recognition ended');
+      startListening(); // Restart listening if recognition ends
     };
 
-    closeResponseBtn.addEventListener('click', () => {
+    closeResponseBtn.onclick = () => {
       responseFrame.classList.remove('active');
-      synthesis.cancel(); // Stop any ongoing speech synthesis
-    });
+    };
 
-    closeCaptionBtn.addEventListener('click', () => {
+    closeCaptionBtn.onclick = () => {
       captionFrame.classList.remove('active');
-    });
+    };
 
-    // Start listening automatically
-    recognition.start();
+    startListening(); // Start listening on page load
   </script>
 </body>
 </html>
