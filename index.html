@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Advanced Voice Assistant</title>
+  <title>Custom Knowledge Base Voice Assistant</title>
   <style>
     body {
       margin: 0;
@@ -17,13 +17,10 @@
       height: 100vh;
     }
 
-    .personal-assistant {
+    .assistant-container {
       position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
       width: 100%;
+      max-width: 600px;
       text-align: center;
     }
 
@@ -76,7 +73,7 @@
     .felix > .eyes > .eye.left { left: 25%; }
     .felix > .eyes > .eye.right { right: 25%; }
 
-    .response-frame, .caption-frame {
+    .response-frame, .caption-frame, .suggestions-frame {
       position: fixed;
       top: 0;
       left: 0;
@@ -90,10 +87,9 @@
       opacity: 0;
       transition: opacity 0.3s linear;
       color: #fff;
-      font-size: 18px;
     }
 
-    .response-frame.active, .caption-frame.active {
+    .response-frame.active, .caption-frame.active, .suggestions-frame.active {
       z-index: 1000;
       opacity: 1;
     }
@@ -104,25 +100,36 @@
       background-color: #333;
     }
 
-    .response-frame > .fas, .caption-frame > .fas {
-      width: 50px;
-      height: 50px;
-      font-size: 25px;
-      line-height: 45px;
-      border: 2px solid #fff;
-      border-radius: 50%;
-      cursor: pointer;
-      box-shadow: 0 0 10px #fff, 0 0 5px #fff inset;
-      transition: 0.3s linear all;
-      display: flex;
+    .suggestions-frame {
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
     }
 
-    .response-frame > .fas:hover, .caption-frame > .fas:hover {
-      border: 2px solid #f55;
-      box-shadow: 0 0 15px #f55, 0 0 5px #f55 inset;
-      color: #f55;
+    .suggestions-frame > .suggestions {
+      max-height: 50%;
+      overflow-y: auto;
+      width: 100%;
+      background-color: #222;
+      border-radius: 5px;
+      padding: 10px;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+
+    .suggestions-frame > .suggestions > button {
+      background: #333;
+      border: none;
+      color: #e0e0e0;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      font-size: 18px;
+    }
+
+    .suggestions-frame > .suggestions > button:hover {
+      background: #444;
     }
 
     @keyframes blink {
@@ -137,7 +144,7 @@
   </style>
 </head>
 <body>
-  <div class="personal-assistant">
+  <div class="assistant-container">
     <div id="felix" class="felix">
       <div class="eyes">
         <div class="eye left"></div>
@@ -145,12 +152,13 @@
       </div>
     </div>
     <div class="response-frame">
-      <div class="lead">Listening...</div>
-      <div class="fas">&#xf057;</div>
+      <div class="lead">Processing...</div>
     </div>
     <div class="caption-frame">
       <div class="caption">Say something...</div>
-      <div class="fas">&#xf057;</div>
+    </div>
+    <div class="suggestions-frame">
+      <div class="suggestions"></div>
     </div>
   </div>
 
@@ -164,67 +172,45 @@
     const felix = document.getElementById('felix');
     const responseFrame = document.querySelector('.response-frame');
     const captionFrame = document.querySelector('.caption-frame');
-    const closeResponseBtn = responseFrame.querySelector('.fas');
-    const closeCaptionBtn = captionFrame.querySelector('.fas');
+    const suggestionsFrame = document.querySelector('.suggestions-frame');
+    const suggestionsContainer = suggestionsFrame.querySelector('.suggestions');
 
     recognition.interimResults = true;
     recognition.lang = 'en-US';
     recognition.continuous = true;
 
-    let silenceTimeout;
     let isListening = false;
+    let currentCommand = '';
+    let silenceTimeout;
 
+    // Custom knowledge base based on the site
     const responses = {
-      hello: [
-        'Hey there! How can I assist you today?',
-        'Hello! What can I do for you?',
-        'Hi! Need help with something?',
-        'Greetings! How can I help?'
-      ],
-      weather: 'I can’t check the weather right now, but you can use a weather app for the latest updates.',
-      joke: [
-        'Why did the scarecrow win an award? Because he was outstanding in his field!',
-        'Why don’t scientists trust atoms? Because they make up everything!',
-        'What do you call fake spaghetti? An impasta!'
-      ],
-      thank: 'You\'re welcome!',
-      help: 'I can help with various tasks like answering questions, telling jokes, and more.',
-      unknown: 'I\'m sorry, I didn\'t understand that command.',
-      goodbye: 'Goodbye! Have a great day!',
-      time: () => {
-        const now = new Date();
-        return `The current time is ${now.toLocaleTimeString()}.`;
-      },
-      date: () => {
-        const now = new Date();
-        return `Today’s date is ${now.toLocaleDateString()}.`;
-      }
+      about: 'We are a company dedicated to providing innovative solutions. For more details, visit our website.',
+      services: 'We offer a range of services including web development, mobile app development, and digital marketing.',
+      contact: 'You can contact us through our website\'s contact form or email us at contact@rammijar.com.np.',
+      support: 'For support, please visit our support page or email us directly.',
+      faq: 'Frequently asked questions are available on our FAQ page.',
+      noInput: 'I didn’t hear anything. Can you please repeat?',
     };
 
     function getRandomResponse(responses) {
-      return responses[Math.floor(Math.random() * responses.length)];
+      const keys = Object.keys(responses);
+      return responses[keys[Math.floor(Math.random() * keys.length)]];
     }
 
     function handleVoiceCommand(command) {
-      let responseText = responses.unknown;
+      let responseText = responses.noInput;
 
-      if (command.includes('hello')) {
-        responseText = getRandomResponse(responses.hello);
-      } else if (command.includes('weather')) {
-        responseText = responses.weather;
-      } else if (command.includes('joke')) {
-        responseText = getRandomResponse(responses.joke);
-      } else if (command.includes('thank you') || command.includes('thanks')) {
-        responseText = responses.thank;
-      } else if (command.includes('help') || command.includes('what can you do')) {
-        responseText = responses.help;
-      } else if (command.includes('goodbye') || command.includes('bye')) {
-        responseText = responses.goodbye;
-        deactivateAssistant();
-      } else if (command.includes('time')) {
-        responseText = responses.time();
-      } else if (command.includes('date')) {
-        responseText = responses.date();
+      if (command.includes('about')) {
+        responseText = responses.about;
+      } else if (command.includes('services')) {
+        responseText = responses.services;
+      } else if (command.includes('contact')) {
+        responseText = responses.contact;
+      } else if (command.includes('support')) {
+        responseText = responses.support;
+      } else if (command.includes('faq')) {
+        responseText = responses.faq;
       }
 
       return responseText;
@@ -235,71 +221,110 @@
       captionFrame.classList.add('active');
     }
 
+    function updateSuggestions(commands) {
+      suggestionsContainer.innerHTML = '';
+      commands.forEach(command => {
+        const button = document.createElement('button');
+        button.textContent = command;
+        button.onclick = () => {
+          processCommand(command.toLowerCase());
+        };
+        suggestionsContainer.appendChild(button);
+      });
+      suggestionsFrame.classList.add('active');
+    }
+
+    function processCommand(command) {
+      let responseText = handleVoiceCommand(command);
+
+      updateCaption(`You said: ${command}`);
+      responseFrame.querySelector('.lead').textContent = 'Processing...';
+
+      if (synthesis.speaking) {
+        synthesis.cancel(); // Stop current speech if any
+      }
+
+      const utterance = new SpeechSynthesisUtterance(responseText);
+      synthesis.speak(utterance);
+
+      responseFrame.classList.add('active');
+
+      utterance.onend = () => {
+        responseFrame.classList.remove('active');
+        captionFrame.classList.remove('active');
+        suggestionsFrame.classList.remove('active');
+        startListening(); // Restart listening after response
+      };
+
+      clearTimeout(silenceTimeout);
+    }
+
+    function handleNoInput() {
+      updateCaption(responses.noInput);
+      responseFrame.querySelector('.lead').textContent = 'Processing...';
+      const utterance = new SpeechSynthesisUtterance(responses.noInput);
+      synthesis.speak(utterance);
+      responseFrame.classList.add('active');
+      utterance.onend = () => {
+        responseFrame.classList.remove('active');
+        captionFrame.classList.remove('active');
+        suggestionsFrame.classList.remove('active');
+        startListening(); // Restart listening after response
+      };
+    }
+
     function startListening() {
-      if (!isListening) {
-        recognition.start();
-        isListening = true;
-      }
-    }
+      if (isListening) return;
 
-    function stopListening() {
-      if (isListening) {
-        recognition.stop();
-        isListening = false;
-      }
-    }
-
-    recognition.onresult = (event) => {
-      let command = '';
-      for (const result of event.results) {
-        if (result.isFinal) {
-          command = result[0].transcript.toLowerCase().trim();
-          console.log(`Heard: ${command}`);
-
-          updateCaption(`You said: ${command}`);
-          responseFrame.querySelector('.lead').textContent = 'Processing...';
-          responseFrame.classList.add('active');
-
-          const responseText = handleVoiceCommand(command);
-
-          if (synthesis.speaking) {
-            synthesis.cancel(); // Stop current speech if any
-          }
-
-          const utterance = new SpeechSynthesisUtterance(responseText);
-          synthesis.speak(utterance);
-
-          // Hide frames after response
-          utterance.onend = () => {
-            responseFrame.classList.remove('active');
-            captionFrame.classList.remove('active');
-            startListening(); // Restart listening after response
-          };
-
-          clearTimeout(silenceTimeout);
-        }
-      }
-    };
-
-    recognition.onerror = (event) => {
-      console.error('Speech recognition error:', event.error);
-      startListening(); // Restart listening on error
-    };
-
-    recognition.onend = () => {
-      console.log('Speech recognition ended');
-      startListening(); // Restart listening if recognition ends
-    };
-
-    closeResponseBtn.onclick = () => {
-      responseFrame.classList.remove('active');
-    };
-
-    closeCaptionBtn.onclick = () => {
+      isListening = true;
+      recognition.start();
+      felix.classList.add('active');
       captionFrame.classList.remove('active');
-    };
+      suggestionsFrame.classList.remove('active');
 
-    // Start listening automatically
+      updateCaption('Listening...');
+      recognition.onresult = (event) => {
+        let transcript = '';
+        for (const result of event.results) {
+          transcript += result[0].transcript;
+        }
+        currentCommand = transcript.toLowerCase();
+        updateSuggestions([
+          'About Us',
+          'Services',
+          'Contact',
+          'Support',
+          'FAQ'
+        ]);
+
+        if (event.results[0].isFinal) {
+          processCommand(currentCommand);
+          isListening = false;
+        }
+      };
+
+      recognition.onspeechend = () => {
+        clearTimeout(silenceTimeout);
+        silenceTimeout = setTimeout(() => {
+          recognition.stop();
+          isListening = false;
+          handleNoInput(); // Handle no input case
+        }, 1000);
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        startListening(); // Restart listening on error
+      };
+    }
+
+    function deactivateAssistant() {
+      felix.classList.remove('active');
+      isListening = false;
+      recognition.stop();
+    }
+
+    // Initial setup
     startListening();
   </script>
 </body>
