@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ne">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -73,10 +73,10 @@
             background: #1E88E5;
         }
         .listening-indicator {
-            display: none;
             font-size: 1.2em;
             color: #ff5722;
             margin-top: 20px;
+            display: none;
         }
         .listening-indicator.active {
             display: block;
@@ -97,19 +97,26 @@
         .suggestion-button:hover {
             background: #45a049;
         }
+        .language-selector {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="assistant-container">
-        <div class="header">नमस्ते! तपाईंलाई म कसरी मद्दत गर्न सक्छु?</div>
-        <div id="caption" class="caption">तपाईंको नाम बताउनुहोस्।</div>
+        <div class="language-selector">
+            <button onclick="setLanguage('ne')">नेपाली</button>
+            <button onclick="setLanguage('en')">English</button>
+        </div>
+        <div class="header" id="header">Hello! How can I help you today?</div>
+        <div id="caption" class="caption">Please tell me your name.</div>
         <div id="response-frame" class="response-frame">
             <div class="response-content">
-                <p id="response-message">सन्देश यहाँ आउँछ</p>
-                <button onclick="closeResponse()">ठिक छ</button>
+                <p id="response-message">Your message will appear here</p>
+                <button onclick="closeResponse()">OK</button>
             </div>
         </div>
-        <div id="listening" class="listening-indicator">सुनिरहेको छु...</div>
+        <div id="listening" class="listening-indicator">Listening...</div>
         <div id="suggestions" class="input-suggestions"></div>
     </div>
 
@@ -124,14 +131,31 @@
         let caption = document.getElementById('caption');
         let listeningIndicator = document.getElementById('listening');
         let suggestionsContainer = document.getElementById('suggestions');
+        let language = 'en'; // Default language
 
-        recognition.lang = 'ne-NP'; // Nepali language
         recognition.interimResults = false;
         recognition.continuous = false;
 
+        function setLanguage(lang) {
+            language = lang;
+            recognition.lang = lang === 'ne' ? 'ne-NP' : 'en-US';
+            updateText(language);
+            startListening();
+        }
+
+        function updateText(lang) {
+            if (lang === 'ne') {
+                document.getElementById('header').textContent = 'नमस्ते! तपाईंलाई म कसरी मद्दत गर्न सक्छु?';
+                caption.textContent = 'तपाईंको नाम बताउनुहोस्।';
+            } else {
+                document.getElementById('header').textContent = 'Hello! How can I help you today?';
+                caption.textContent = 'Please tell me your name.';
+            }
+        }
+
         function speak(text) {
             let utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'ne-NP'; // Nepali language
+            utterance.lang = language === 'ne' ? 'ne-NP' : 'en-US';
             synthesis.speak(utterance);
         }
 
@@ -152,22 +176,19 @@
         function handleVoiceCommand(command) {
             if (!userName) {
                 userName = command;
-                caption.textContent = `नमस्ते, ${userName}! तपाईंलाई कसरी मद्दत गर्न सक्छु?`;
-                speak(`नमस्ते, ${userName}! तपाईंलाई कसरी मद्दत गर्न सक्छु?`);
+                let greeting = language === 'ne' ? `नमस्ते, ${userName}! तपाईंलाई कसरी मद्दत गर्न सक्छु?` : `Hello, ${userName}! How can I help you today?`;
+                caption.textContent = greeting;
+                speak(greeting);
             } else {
                 let responseText = '';
                 let suggestions = [];
-                switch (command.toLowerCase()) {
-                    case 'सुप्रभात':
-                        responseText = 'सुप्रभात! के म तपाईंलाई केहि मद्दत गर्न सक्छु?';
-                        suggestions = ['मलाई मौसम बताउनुहोस्', 'मलाई समाचार बताउनुहोस्'];
-                        break;
-                    case 'धन्यवाद':
-                        responseText = 'धन्यवाद! तपाईलाई अझै केहि चाहिन्छ भने मलाई भन्नुहोस्।';
-                        break;
-                    default:
-                        responseText = 'माफ गर्नुहोस्, मैले बुझ्न सकेन। कृपया फेरि प्रयास गर्नुहोस्।';
-                        break;
+                if (command.toLowerCase().includes('good morning')) {
+                    responseText = language === 'ne' ? 'सुप्रभात! के म तपाईंलाई केहि मद्दत गर्न सक्छु?' : 'Good morning! How can I assist you today?';
+                    suggestions = [language === 'ne' ? 'मलाई मौसम बताउनुहोस्' : 'Tell me the weather', language === 'ne' ? 'मलाई समाचार बताउनुहोस्' : 'Tell me the news'];
+                } else if (command.toLowerCase().includes('thank you')) {
+                    responseText = language === 'ne' ? 'धन्यवाद! तपाईलाई अझै केहि चाहिन्छ भने मलाई भन्नुहोस्।' : 'Thank you! If you need anything else, just let me know.';
+                } else {
+                    responseText = language === 'ne' ? 'माफ गर्नुहोस्, मैले बुझ्न सकेन। कृपया फेरि प्रयास गर्नुहोस्।' : 'Sorry, I didn\'t understand that. Please try again.';
                 }
                 showResponse(responseText, suggestions);
             }
@@ -195,6 +216,14 @@
             responseFrame.classList.remove('active');
         }
 
+        function handleNoInput() {
+            if (isListening) {
+                stopListening();
+                let noInputMessage = language === 'ne' ? 'म तपाईंलाई केही पनि सुनिरहेको छैन। कृपया प्रयास गर्नुहोस्।' : 'I can\'t hear you. Please try again.';
+                showResponse(noInputMessage);
+            }
+        }
+
         recognition.onresult = function(event) {
             const command = event.results[0][0].transcript;
             stopListening();
@@ -202,24 +231,17 @@
             handleVoiceCommand(command);
         };
 
-        recognition.onerror = function(event) {
+        recognition.onerror = function() {
             stopListening();
-            showResponse('माफ गर्नुहोस्, केही समस्या भयो। कृपया फेरि प्रयास गर्नुहोस्।');
+            let errorMessage = language === 'ne' ? 'माफ गर्नुहोस्, केही समस्या भयो। कृपया फेरि प्रयास गर्नुहोस्।' : 'Sorry, there was a problem. Please try again.';
+            showResponse(errorMessage);
         };
 
-        function checkForInput() {
-            setTimeout(function() {
-                if (isListening) {
-                    stopListening();
-                    showResponse('म तपाईंलाई केही पनि सुनिरहेको छैन। कृपया प्रयास गर्नुहोस्।');
-                }
-            }, 5000);
-        }
-
-        // Start listening automatically and check for input
+        // Initialize
+        setLanguage('en'); // Start with English
         setTimeout(() => {
             startListening();
-            checkForInput();
+            setTimeout(handleNoInput, 5000); // Wait 5 seconds for input
         }, 1000);
     </script>
 </body>
