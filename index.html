@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Advanced Voice Assistant with Wake-Up and Sleep Commands</title>
+  <title>Advanced Voice Assistant</title>
   <style>
     body {
       margin: 0;
@@ -167,12 +167,12 @@
     const closeResponseBtn = responseFrame.querySelector('.fas');
     const closeCaptionBtn = captionFrame.querySelector('.fas');
 
-    recognition.interimResults = false;
+    recognition.interimResults = true;
     recognition.lang = 'en-US';
     recognition.continuous = true;
 
     let silenceTimeout;
-    let isActive = false;
+    let isListening = false;
 
     const responses = {
       hello: [
@@ -188,10 +188,17 @@
         'What do you call fake spaghetti? An impasta!'
       ],
       thank: 'You\'re welcome!',
-      activate: 'Felix is now active!',
-      deactivate: 'Felix is now inactive.',
       help: 'I can help with various tasks like answering questions, telling jokes, and more.',
-      unknown: 'I\'m sorry, I didn\'t understand that command.'
+      unknown: 'I\'m sorry, I didn\'t understand that command.',
+      goodbye: 'Goodbye! Have a great day!',
+      time: () => {
+        const now = new Date();
+        return `The current time is ${now.toLocaleTimeString()}.`;
+      },
+      date: () => {
+        const now = new Date();
+        return `Today’s date is ${now.toLocaleDateString()}.`;
+      }
     };
 
     function getRandomResponse(responses) {
@@ -209,64 +216,74 @@
         responseText = getRandomResponse(responses.joke);
       } else if (command.includes('thank you') || command.includes('thanks')) {
         responseText = responses.thank;
-      } else if (command.includes('activate')) {
-        felix.classList.add('active');
-        responseText = responses.activate;
-        isActive = true;
-      } else if (command.includes('deactivate')) {
-        felix.classList.remove('active');
-        responseText = responses.deactivate;
-        isActive = false;
       } else if (command.includes('help') || command.includes('what can you do')) {
         responseText = responses.help;
+      } else if (command.includes('goodbye') || command.includes('bye')) {
+        responseText = responses.goodbye;
+        deactivateAssistant();
+      } else if (command.includes('time')) {
+        responseText = responses.time();
+      } else if (command.includes('date')) {
+        responseText = responses.date();
       }
 
       return responseText;
     }
 
+    function updateCaption(text) {
+      captionFrame.querySelector('.caption').textContent = text;
+      captionFrame.classList.add('active');
+    }
+
     function startListening() {
-      if (isActive) {
+      if (!isListening) {
         recognition.start();
+        isListening = true;
+      }
+    }
+
+    function stopListening() {
+      if (isListening) {
+        recognition.stop();
+        isListening = false;
       }
     }
 
     recognition.onresult = (event) => {
-      clearTimeout(silenceTimeout);
+      let command = '';
+      for (const result of event.results) {
+        if (result.isFinal) {
+          command = result[0].transcript.toLowerCase().trim();
+          console.log(`Heard: ${command}`);
 
-      const transcript = event.results[0][0].transcript.toLowerCase();
-      console.log('User said:', transcript);
+          updateCaption(`You said: ${command}`);
+          responseFrame.querySelector('.lead').textContent = 'Processing...';
+          responseFrame.classList.add('active');
 
-      const response = handleVoiceCommand(transcript);
+          const responseText = handleVoiceCommand(command);
 
-      // Show voice caption
-      const caption = captionFrame.querySelector('.caption');
-      caption.textContent = `You said: "${transcript}"`;
-      captionFrame.classList.add('active');
+          if (synthesis.speaking) {
+            synthesis.cancel(); // Stop current speech if any
+          }
 
-      // Speak response
-      if (response) {
-        const speech = new SpeechSynthesisUtterance(response);
-        synthesis.speak(speech);
+          const utterance = new SpeechSynthesisUtterance(responseText);
+          synthesis.speak(utterance);
 
-        responseFrame.classList.add('active');
-        felix.classList.add('active');
+          // Hide frames after response
+          utterance.onend = () => {
+            responseFrame.classList.remove('active');
+            captionFrame.classList.remove('active');
+            startListening(); // Restart listening after response
+          };
 
-        // Hide response and caption frames after response
-        speech.onend = () => {
-          responseFrame.classList.remove('active');
-          captionFrame.classList.remove('active');
-        };
+          clearTimeout(silenceTimeout);
+        }
       }
-
-      // Set a timeout to start listening again after a pause
-      silenceTimeout = setTimeout(() => {
-        startListening();
-      }, 1000);
     };
 
     recognition.onerror = (event) => {
       console.error('Speech recognition error:', event.error);
-      startListening();
+      startListening(); // Restart listening on error
     };
 
     recognition.onend = () => {
@@ -282,29 +299,8 @@
       captionFrame.classList.remove('active');
     };
 
-    function activateAssistant() {
-      isActive = true;
-      felix.classList.add('active');
-      startListening();
-    }
-
-    function deactivateAssistant() {
-      isActive = false;
-      felix.classList.remove('active');
-      recognition.stop();
-    }
-
-    // Initial state
-    deactivateAssistant();
-
-    // Command to start listening
-    window.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') {
-        activateAssistant();
-      } else if (event.key === 'Escape') {
-        deactivateAssistant();
-      }
-    });
+    // Start listening automatically
+    startListening();
   </script>
 </body>
 </html>
