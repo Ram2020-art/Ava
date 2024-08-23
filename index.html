@@ -76,7 +76,7 @@
     .felix > .eyes > .eye.left { left: 25%; }
     .felix > .eyes > .eye.right { right: 25%; }
 
-    .response-frame {
+    .response-frame, .caption-frame {
       position: fixed;
       top: 0;
       left: 0;
@@ -90,21 +90,21 @@
       opacity: 0;
       transition: opacity 0.3s linear;
       color: #fff;
+      font-size: 18px;
     }
 
-    .response-frame.active {
+    .response-frame.active, .caption-frame.active {
       z-index: 1000;
       opacity: 1;
     }
 
-    .response-frame > .lead {
+    .response-frame > .lead, .caption-frame > .caption {
       padding: 10px;
       border-radius: 5px;
       background-color: #333;
-      font-size: 18px;
     }
 
-    .response-frame > .fas {
+    .response-frame > .fas, .caption-frame > .fas {
       width: 50px;
       height: 50px;
       font-size: 25px;
@@ -119,7 +119,7 @@
       justify-content: center;
     }
 
-    .response-frame > .fas:hover {
+    .response-frame > .fas:hover, .caption-frame > .fas:hover {
       border: 2px solid #f55;
       box-shadow: 0 0 15px #f55, 0 0 5px #f55 inset;
       color: #f55;
@@ -148,6 +148,10 @@
       <div class="lead">Listening...</div>
       <div class="fas">&#xf057;</div>
     </div>
+    <div class="caption-frame">
+      <div class="caption">Say something...</div>
+      <div class="fas">&#xf057;</div>
+    </div>
   </div>
 
   <script>
@@ -160,7 +164,9 @@
 
     const felix = document.getElementById('felix');
     const responseFrame = document.querySelector('.response-frame');
-    const closeBtn = responseFrame.querySelector('.fas');
+    const captionFrame = document.querySelector('.caption-frame');
+    const closeResponseBtn = responseFrame.querySelector('.fas');
+    const closeCaptionBtn = captionFrame.querySelector('.fas');
 
     recognition.interimResults = false;
     recognition.lang = 'en-US';
@@ -220,9 +226,16 @@
 
       const response = handleVoiceCommand(transcript);
 
+      // Show voice caption
+      const caption = captionFrame.querySelector('.caption');
+      caption.textContent = `You said: "${transcript}"`;
+      captionFrame.classList.add('active');
+
+      // Speak response
       if (response) {
         const speech = new SpeechSynthesisUtterance(response);
         synthesis.speak(speech);
+
         responseFrame.classList.add('active');
         felix.classList.add('active');
       }
@@ -236,9 +249,13 @@
       recognition.start(); // Restart recognition when it ends
     };
 
-    closeBtn.addEventListener('click', () => {
+    closeResponseBtn.addEventListener('click', () => {
       responseFrame.classList.remove('active');
       synthesis.cancel(); // Stop any ongoing speech synthesis
+    });
+
+    closeCaptionBtn.addEventListener('click', () => {
+      captionFrame.classList.remove('active');
     });
 
     // Start listening automatically
