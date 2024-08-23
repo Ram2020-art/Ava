@@ -166,7 +166,6 @@
     recognition.lang = 'en-US';
     recognition.continuous = true;
 
-    // List of responses for various commands
     const responses = {
       hello: [
         'Hey there! How can I assist you today?',
@@ -183,43 +182,49 @@
       thank: 'You\'re welcome!',
       activate: 'Felix is now active!',
       deactivate: 'Felix is now inactive.',
-      help: 'I can help with various tasks like answering questions, telling jokes, and more.'
+      help: 'I can help with various tasks like answering questions, telling jokes, and more.',
+      unknown: 'I\'m sorry, I didn\'t understand that command.'
     };
 
-    // Function to get a random response from a list
     function getRandomResponse(responses) {
       return responses[Math.floor(Math.random() * responses.length)];
+    }
+
+    function handleVoiceCommand(command) {
+      let responseText = responses.unknown;
+      
+      if (command.includes('hello')) {
+        responseText = getRandomResponse(responses.hello);
+      } else if (command.includes('weather')) {
+        responseText = responses.weather;
+      } else if (command.includes('joke')) {
+        responseText = getRandomResponse(responses.joke);
+      } else if (command.includes('thank you') || command.includes('thanks')) {
+        responseText = responses.thank;
+      } else if (command.includes('activate')) {
+        felix.classList.add('active');
+        responseText = responses.activate;
+      } else if (command.includes('deactivate')) {
+        felix.classList.remove('active');
+        responseText = responses.deactivate;
+      } else if (command.includes('help') || command.includes('what can you do')) {
+        responseText = responses.help;
+      }
+
+      return responseText;
     }
 
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript.toLowerCase();
       console.log('User said:', transcript);
 
-      if (transcript.includes('hello')) {
-        const response = new SpeechSynthesisUtterance(getRandomResponse(responses.hello));
-        synthesis.speak(response);
+      const response = handleVoiceCommand(transcript);
+
+      if (response) {
+        const speech = new SpeechSynthesisUtterance(response);
+        synthesis.speak(speech);
         responseFrame.classList.add('active');
         felix.classList.add('active');
-      } else if (transcript.includes('weather')) {
-        const response = new SpeechSynthesisUtterance(responses.weather);
-        synthesis.speak(response);
-      } else if (transcript.includes('joke')) {
-        const response = new SpeechSynthesisUtterance(getRandomResponse(responses.joke));
-        synthesis.speak(response);
-      } else if (transcript.includes('thank you') || transcript.includes('thanks')) {
-        const response = new SpeechSynthesisUtterance(responses.thank);
-        synthesis.speak(response);
-      } else if (transcript.includes('activate')) {
-        felix.classList.add('active');
-        const response = new SpeechSynthesisUtterance(responses.activate);
-        synthesis.speak(response);
-      } else if (transcript.includes('deactivate')) {
-        felix.classList.remove('active');
-        const response = new SpeechSynthesisUtterance(responses.deactivate);
-        synthesis.speak(response);
-      } else if (transcript.includes('help') || transcript.includes('what can you do')) {
-        const response = new SpeechSynthesisUtterance(responses.help);
-        synthesis.speak(response);
       }
     };
 
@@ -236,7 +241,7 @@
       synthesis.cancel(); // Stop any ongoing speech synthesis
     });
 
-    // Start voice recognition
+    // Start listening automatically
     recognition.start();
   </script>
 </body>
