@@ -10,154 +10,130 @@
       font-family: Arial, sans-serif;
       background-color: #121212;
       color: #e0e0e0;
-      overflow: hidden;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       height: 100vh;
+      overflow: hidden;
     }
 
     .assistant-container {
       position: relative;
       width: 100%;
       max-width: 600px;
-      text-align: center;
-    }
-
-    .felix {
-      position: absolute;
-      bottom: 50px;
-      width: 110px;
-      height: 95px;
-      border-radius: 45%;
-      border: 3px solid #fff;
-      box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-      animation: breathe-and-jump 3s linear infinite;
-      cursor: pointer;
-      z-index: 1;
-      background: linear-gradient(to bottom, #5fc, #1a8);
-    }
-
-    .felix::before {
-      content: '';
-      position: absolute;
-      top: -1px;
-      left: -1px;
-      width: calc(100% + 3px);
-      height: calc(100% + 2px);
-      background: linear-gradient(to bottom, #5fc, #1a8);
-      border-radius: 45%;
-      opacity: 0;
-      transition: 0.3s linear all;
-    }
-
-    .felix.active::before {
-      opacity: 1;
-    }
-
-    .felix > .eyes {
-      position: relative;
-    }
-
-    .felix > .eyes > .eye {
-      position: absolute;
-      top: 20px;
-      width: 20px;
-      height: 25px;
-      border-radius: 15px;
-      background-color: #fff;
-      box-shadow: 0 0 7px rgba(255, 255, 255, 0.5);
-      animation: blink 5s linear infinite;
-    }
-
-    .felix > .eyes > .eye.left { left: 25%; }
-    .felix > .eyes > .eye.right { right: 25%; }
-
-    .response-frame, .caption-frame, .suggestions-frame {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+      background-color: #1e1e1e;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.7);
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      background-color: #000c;
-      z-index: -1;
-      opacity: 0;
-      transition: opacity 0.3s linear;
-      color: #fff;
+      animation: fadeIn 1s ease-out;
     }
 
-    .response-frame.active, .caption-frame.active, .suggestions-frame.active {
-      z-index: 1000;
-      opacity: 1;
-    }
-
-    .response-frame > .lead, .caption-frame > .caption {
-      padding: 10px;
-      border-radius: 5px;
+    .caption-frame, .response-frame {
+      width: 100%;
+      padding: 20px;
+      border-radius: 10px;
       background-color: #333;
+      text-align: center;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+      transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+    }
+
+    .response-frame {
+      display: none;
+      font-size: 18px;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .caption-frame {
+      font-size: 16px;
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .suggestions-frame {
+      position: absolute;
+      bottom: 20px;
+      width: calc(100% - 40px);
+      background-color: rgba(0, 0, 0, 0.9);
+      color: #e0e0e0;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 -2px 10px rgba(255, 255, 255, 0.5);
+      display: flex;
       flex-direction: column;
       align-items: center;
-    }
-
-    .suggestions-frame > .suggestions {
       max-height: 50%;
       overflow-y: auto;
-      width: 100%;
-      background-color: #222;
-      border-radius: 5px;
-      padding: 10px;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      transition: opacity 0.5s ease-in-out;
+      opacity: 0;
+    }
+
+    .suggestions-frame.show {
+      opacity: 1;
     }
 
     .suggestions-frame > .suggestions > button {
-      background: #333;
+      background: #444;
       border: none;
       color: #e0e0e0;
-      padding: 10px;
+      padding: 12px;
       margin: 5px 0;
       border-radius: 5px;
       cursor: pointer;
       width: 100%;
       text-align: left;
-      font-size: 18px;
+      font-size: 16px;
+      transition: background 0.3s ease, transform 0.2s ease;
     }
 
     .suggestions-frame > .suggestions > button:hover {
-      background: #444;
+      background: #555;
+      transform: scale(1.02);
     }
 
-    @keyframes blink {
-      0%, 100% { transform: scale(1, 0.05); }
-      5%, 95% { transform: scale(1, 1); }
+    .suggestions-frame > .suggestions > button:active {
+      background: #666;
+      transform: scale(0.98);
     }
 
-    @keyframes breathe-and-jump {
-      0%, 40%, 80%, 100% { height: 95px; transform: translateY(0); }
-      20%, 60%, 70%, 90% { height: 100px; transform: translateY(-5px); }
+    @media (max-width: 600px) {
+      .caption-frame, .response-frame {
+        padding: 15px;
+        font-size: 14px;
+      }
+
+      .suggestions-frame > .suggestions > button {
+        font-size: 14px;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
 <body>
   <div class="assistant-container">
-    <div id="felix" class="felix">
-      <div class="eyes">
-        <div class="eye left"></div>
-        <div class="eye right"></div>
-      </div>
+    <div class="caption-frame" id="caption-frame">
+      Say something...
     </div>
-    <div class="response-frame">
-      <div class="lead">Processing...</div>
+    <div class="response-frame" id="response-frame">
+      Processing...
     </div>
-    <div class="caption-frame">
-      <div class="caption">Say something...</div>
-    </div>
-    <div class="suggestions-frame">
+    <div class="suggestions-frame" id="suggestions-frame">
       <div class="suggestions"></div>
     </div>
   </div>
@@ -169,10 +145,9 @@
 
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     const synthesis = window.speechSynthesis;
-    const felix = document.getElementById('felix');
-    const responseFrame = document.querySelector('.response-frame');
-    const captionFrame = document.querySelector('.caption-frame');
-    const suggestionsFrame = document.querySelector('.suggestions-frame');
+    const responseFrame = document.getElementById('response-frame');
+    const captionFrame = document.getElementById('caption-frame');
+    const suggestionsFrame = document.getElementById('suggestions-frame');
     const suggestionsContainer = suggestionsFrame.querySelector('.suggestions');
 
     recognition.interimResults = true;
@@ -182,9 +157,10 @@
     let isListening = false;
     let currentCommand = '';
     let silenceTimeout;
+    let userName = '';
 
-    // Custom knowledge base based on the site
     const responses = {
+      greeting: (name) => `Hey there, ${name}! How are you today?`,
       about: 'We are a company dedicated to providing innovative solutions. For more details, visit our website.',
       services: 'We offer a range of services including web development, mobile app development, and digital marketing.',
       contact: 'You can contact us through our website\'s contact form or email us at contact@rammijar.com.np.',
@@ -194,12 +170,26 @@
       fallback: 'I’m not sure about that. Can you please provide more details?'
     };
 
-    function getRandomResponse(responses) {
-      const keys = Object.keys(responses);
-      return responses[keys[Math.floor(Math.random() * keys.length)]];
+    function updateCaption(text) {
+      captionFrame.textContent = text;
+      captionFrame.style.opacity = '1';
+      captionFrame.style.transform = 'translateY(0)';
     }
 
-    function handleVoiceCommand(command) {
+    function updateSuggestions(commands) {
+      suggestionsContainer.innerHTML = '';
+      commands.forEach(command => {
+        const button = document.createElement('button');
+        button.textContent = command;
+        button.onclick = () => {
+          processCommand(command.toLowerCase());
+        };
+        suggestionsContainer.appendChild(button);
+      });
+      suggestionsFrame.classList.add('show');
+    }
+
+    function processCommand(command) {
       let responseText = responses.fallback;
 
       if (command.includes('about')) {
@@ -217,46 +207,37 @@
       return responseText;
     }
 
-    function updateCaption(text) {
-      captionFrame.querySelector('.caption').textContent = text;
-      captionFrame.classList.add('active');
-    }
+    function handleVoiceCommand(command) {
+      let responseText = '';
 
-    function updateSuggestions(commands) {
-      suggestionsContainer.innerHTML = '';
-      commands.forEach(command => {
-        const button = document.createElement('button');
-        button.textContent = command;
-        button.onclick = () => {
-          processCommand(command.toLowerCase());
-        };
-        suggestionsContainer.appendChild(button);
-      });
-      suggestionsFrame.classList.add('active');
-    }
+      if (!userName) {
+        userName = command;
+        responseText = responses.greeting(userName);
+        updateCaption(`Nice to meet you, ${userName}.`);
+      } else {
+        responseText = processCommand(command);
+        updateCaption(`You said: ${command}`);
+      }
 
-    function processCommand(command) {
-      let responseText = handleVoiceCommand(command);
-
-      updateCaption(`You said: ${command}`);
-      responseFrame.querySelector('.lead').textContent = 'Processing...';
+      responseFrame.textContent = 'Processing...';
+      responseFrame.style.opacity = '1';
+      responseFrame.style.transform = 'translateY(0)';
 
       if (synthesis.speaking) {
-        synthesis.cancel(); // Stop current speech if any
+        synthesis.cancel();
       }
 
       const utterance = new SpeechSynthesisUtterance(responseText);
-      utterance.pitch = 1.1; // Adjust pitch
-      utterance.rate = 1;   // Adjust rate
+      utterance.pitch = 1.1;
+      utterance.rate = 1;
       synthesis.speak(utterance);
 
-      responseFrame.classList.add('active');
-
       utterance.onend = () => {
-        responseFrame.classList.remove('active');
-        captionFrame.classList.remove('active');
-        suggestionsFrame.classList.remove('active');
-        startListening(); // Restart listening after response
+        responseFrame.style.opacity = '0';
+        responseFrame.style.transform = 'translateY(20px)';
+        captionFrame.textContent = '';
+        suggestionsFrame.classList.remove('show');
+        startListening();
       };
 
       clearTimeout(silenceTimeout);
@@ -264,15 +245,17 @@
 
     function handleNoInput() {
       updateCaption(responses.noInput);
-      responseFrame.querySelector('.lead').textContent = 'Processing...';
+      responseFrame.textContent = 'Processing...';
+      responseFrame.style.opacity = '1';
+      responseFrame.style.transform = 'translateY(0)';
       const utterance = new SpeechSynthesisUtterance(responses.noInput);
       synthesis.speak(utterance);
-      responseFrame.classList.add('active');
       utterance.onend = () => {
-        responseFrame.classList.remove('active');
-        captionFrame.classList.remove('active');
-        suggestionsFrame.classList.remove('active');
-        startListening(); // Restart listening after response
+        responseFrame.style.opacity = '0';
+        responseFrame.style.transform = 'translateY(20px)';
+        captionFrame.textContent = '';
+        suggestionsFrame.classList.remove('show');
+        startListening();
       };
     }
 
@@ -281,27 +264,23 @@
 
       isListening = true;
       recognition.start();
-      felix.classList.add('active');
-      captionFrame.classList.remove('active');
-      suggestionsFrame.classList.remove('active');
+      captionFrame.textContent = 'Listening...';
+      suggestionsFrame.classList.remove('show');
 
-      updateCaption('Listening...');
       recognition.onresult = (event) => {
         let transcript = '';
         for (const result of event.results) {
           transcript += result[0].transcript;
         }
         currentCommand = transcript.toLowerCase();
-        updateSuggestions([
-          'About Us',
-          'Services',
-          'Contact',
-          'Support',
-          'FAQ'
-        ]);
+
+        if (userName) {
+          handleVoiceCommand(currentCommand);
+        } else {
+          handleVoiceCommand(currentCommand);
+        }
 
         if (event.results[0].isFinal) {
-          processCommand(currentCommand);
           isListening = false;
         }
       };
@@ -311,23 +290,16 @@
         silenceTimeout = setTimeout(() => {
           recognition.stop();
           isListening = false;
-          handleNoInput(); // Handle no input case
-        }, 1000);
+          handleNoInput();
+        }, 5000);
       };
 
       recognition.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
-        startListening(); // Restart listening on error
+        startListening();
       };
     }
 
-    function deactivateAssistant() {
-      felix.classList.remove('active');
-      isListening = false;
-      recognition.stop();
-    }
-
-    // Initial setup
     startListening();
   </script>
 </body>
