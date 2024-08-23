@@ -166,15 +166,27 @@
     recognition.lang = 'en-US';
     recognition.continuous = true;
 
-    // List of responses for 'hello'
-    const helloResponses = [
-      'Hey there! How can I assist you today?',
-      'Hello! What can I do for you?',
-      'Hi! Need help with something?',
-      'Greetings! How can I help?'
-    ];
+    // List of responses for various commands
+    const responses = {
+      hello: [
+        'Hey there! How can I assist you today?',
+        'Hello! What can I do for you?',
+        'Hi! Need help with something?',
+        'Greetings! How can I help?'
+      ],
+      weather: 'I can’t check the weather right now, but you can use a weather app for the latest updates.',
+      joke: [
+        'Why did the scarecrow win an award? Because he was outstanding in his field!',
+        'Why don’t scientists trust atoms? Because they make up everything!',
+        'What do you call fake spaghetti? An impasta!'
+      ],
+      thank: 'You\'re welcome!',
+      activate: 'Felix is now active!',
+      deactivate: 'Felix is now inactive.',
+      help: 'I can help with various tasks like answering questions, telling jokes, and more.'
+    };
 
-    // Function to get a random response
+    // Function to get a random response from a list
     function getRandomResponse(responses) {
       return responses[Math.floor(Math.random() * responses.length)];
     }
@@ -184,23 +196,29 @@
       console.log('User said:', transcript);
 
       if (transcript.includes('hello')) {
-        const response = new SpeechSynthesisUtterance(getRandomResponse(helloResponses));
+        const response = new SpeechSynthesisUtterance(getRandomResponse(responses.hello));
         synthesis.speak(response);
         responseFrame.classList.add('active');
         felix.classList.add('active');
+      } else if (transcript.includes('weather')) {
+        const response = new SpeechSynthesisUtterance(responses.weather);
+        synthesis.speak(response);
+      } else if (transcript.includes('joke')) {
+        const response = new SpeechSynthesisUtterance(getRandomResponse(responses.joke));
+        synthesis.speak(response);
+      } else if (transcript.includes('thank you') || transcript.includes('thanks')) {
+        const response = new SpeechSynthesisUtterance(responses.thank);
+        synthesis.speak(response);
       } else if (transcript.includes('activate')) {
         felix.classList.add('active');
-        const response = new SpeechSynthesisUtterance('Felix is now active!');
+        const response = new SpeechSynthesisUtterance(responses.activate);
         synthesis.speak(response);
       } else if (transcript.includes('deactivate')) {
         felix.classList.remove('active');
-        const response = new SpeechSynthesisUtterance('Felix is now inactive.');
+        const response = new SpeechSynthesisUtterance(responses.deactivate);
         synthesis.speak(response);
-      } else if (transcript.includes('thank you')) {
-        const response = new SpeechSynthesisUtterance('You\'re welcome!');
-        synthesis.speak(response);
-      } else if (transcript.includes('what can you do')) {
-        const response = new SpeechSynthesisUtterance('I can help with various tasks like answering questions, providing information, and more.');
+      } else if (transcript.includes('help') || transcript.includes('what can you do')) {
+        const response = new SpeechSynthesisUtterance(responses.help);
         synthesis.speak(response);
       }
     };
