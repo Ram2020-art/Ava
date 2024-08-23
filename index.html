@@ -6,140 +6,153 @@
     <title>Advanced Voice Assistant</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1c1c1c;
-            color: #f0f0f0;
-            margin: 0;
+            background-color: #1e1e1e;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            overflow: hidden;
+            margin: 0;
         }
         .assistant-container {
-            max-width: 600px;
-            width: 100%;
-            background: #292929;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
             text-align: center;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            background-color: #282828;
+            border-radius: 12px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
             position: relative;
-            animation: fadeIn 1.5s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
         }
         .language-selector button {
-            background-color: #444;
-            color: #eee;
+            background: #444;
             border: none;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 20px;
+            color: #fff;
             margin: 5px;
-            transition: background-color 0.3s ease;
+            cursor: pointer;
+            transition: background 0.3s;
         }
         .language-selector button:hover {
-            background-color: #666;
+            background: #666;
         }
         .header {
-            font-size: 24px;
-            margin-bottom: 20px;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            animation: fadeIn 1.5s;
         }
         .caption {
-            font-size: 18px;
+            margin-bottom: 15px;
+            animation: fadeIn 2s;
+        }
+        .text-input {
             margin-bottom: 15px;
         }
         .text-input input {
+            padding: 10px;
             width: 70%;
-            padding: 12px;
             border: none;
             border-radius: 5px;
-            font-size: 16px;
             margin-right: 10px;
-            background-color: #3c3c3c;
-            color: #eee;
-            transition: background-color 0.3s ease;
-        }
-        .text-input input:focus {
-            background-color: #555;
             outline: none;
         }
         .text-input button {
-            background-color: #444;
-            color: #eee;
+            padding: 10px 15px;
+            background: #008cba;
             border: none;
-            padding: 12px;
             border-radius: 5px;
+            color: #fff;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: background 0.3s;
         }
         .text-input button:hover {
-            background-color: #666;
+            background: #005f5f;
         }
         .response-frame {
-            display: none;
-            background: #444;
-            padding: 15px;
+            background-color: #333;
+            padding: 20px;
             border-radius: 10px;
-            margin-top: 20px;
-            animation: slideIn 1s ease forwards;
+            display: none;
+            animation: slideIn 0.5s;
         }
-        @keyframes slideIn {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        .response-content p {
+            margin: 0;
+            padding: 10px;
+            font-size: 1.2em;
         }
-        .response-frame.active {
-            display: block;
+        .response-content button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #666;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .response-content button:hover {
+            background: #444;
         }
         .listening-indicator {
-            margin-top: 10px;
-            font-size: 16px;
-            color: #aaa;
             display: none;
+            margin-top: 15px;
+            font-size: 1.2em;
+            color: #00ff00;
         }
-        .listening-indicator.active {
-            display: block;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        .input-suggestions {
-            margin-top: 20px;
-        }
-        .input-suggestions .suggestion-button {
-            background-color: #555;
-            color: #eee;
+        .input-suggestions button {
+            background: #444;
             border: none;
-            padding: 8px 15px;
+            padding: 10px;
             border-radius: 5px;
-            cursor: pointer;
+            color: #fff;
             margin: 5px;
-            transition: background-color 0.3s ease;
+            cursor: pointer;
+            transition: background 0.3s;
         }
-        .input-suggestions .suggestion-button:hover {
-            background-color: #777;
+        .input-suggestions button:hover {
+            background: #666;
         }
-        .voice-visualizer {
+        .waveform {
             position: absolute;
             bottom: 10px;
-            left: 0;
-            right: 0;
+            left: 50%;
+            transform: translateX(-50%);
             height: 50px;
-            background: linear-gradient(90deg, #ff6f61, #ffbc61, #ffe861);
-            border-radius: 25px;
-            opacity: 0;
-            transform: scale(0.8);
-            animation: visualizerFadeIn 1s ease forwards;
+            width: 100%;
+            max-width: 500px;
+            opacity: 0.7;
+            display: none;
         }
-        @keyframes visualizerFadeIn {
-            from { opacity: 0; transform: scale(0.5); }
-            to { opacity: 1; transform: scale(1); }
+        .waveform div {
+            height: 100%;
+            width: 3px;
+            background-color: #00ff00;
+            margin: 0 1px;
+            display: inline-block;
+            animation: waveform 1s infinite;
+        }
+        .waveform div:nth-child(2n) {
+            animation-delay: 0.2s;
+        }
+        .waveform div:nth-child(3n) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes waveform {
+            0%, 100% { height: 20%; }
+            50% { height: 100%; }
         }
     </style>
 </head>
@@ -163,41 +176,54 @@
         </div>
         <div id="listening" class="listening-indicator">Listening...</div>
         <div id="suggestions" class="input-suggestions"></div>
-        <div class="voice-visualizer" id="voice-visualizer"></div>
+        <div class="waveform" id="waveform">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
     </div>
 
     <script>
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         const synthesis = window.speechSynthesis;
-
-        let userName = '';
+        let userName = localStorage.getItem('userName') || '';
+        let language = localStorage.getItem('language') || 'en';
         let isListening = false;
+        let isFirstVisit = !userName;
         let responseFrame = document.getElementById('response-frame');
         let responseMessage = document.getElementById('response-message');
         let caption = document.getElementById('caption');
         let listeningIndicator = document.getElementById('listening');
         let suggestionsContainer = document.getElementById('suggestions');
         let textInput = document.getElementById('text-input');
-        let voiceVisualizer = document.getElementById('voice-visualizer');
-        let language = 'en'; // Default language
+        let waveform = document.getElementById('waveform');
 
         recognition.interimResults = false;
         recognition.continuous = false;
+        recognition.lang = language === 'ne' ? 'ne-NP' : 'en-US';
+
+        if (userName) {
+            greetUser();
+        } else {
+            requestUserName();
+        }
 
         function setLanguage(lang) {
             language = lang;
+            localStorage.setItem('language', language);
             recognition.lang = lang === 'ne' ? 'ne-NP' : 'en-US';
             updateText(language);
-            startListening();
         }
 
         function updateText(lang) {
             if (lang === 'ne') {
                 document.getElementById('header').textContent = 'नमस्ते! तपाईंलाई म कसरी मद्दत गर्न सक्छु?';
-                caption.textContent = 'तपाईंको नाम बताउनुहोस्।';
+                caption.textContent = isFirstVisit ? 'तपाईंको नाम बताउनुहोस्।' : `फेरी स्वागत छ, ${userName}! के म तपाईंलाई मद्दत गर्न सक्छु?`;
             } else {
                 document.getElementById('header').textContent = 'Hello! How can I help you today?';
-                caption.textContent = 'Please tell me your name.';
+                caption.textContent = isFirstVisit ? 'Please tell me your name.' : `Welcome back, ${userName}! How can I assist you today?`;
             }
         }
 
@@ -210,78 +236,88 @@
         function startListening() {
             if (isListening) return;
             isListening = true;
-            listeningIndicator.classList.add('active');
-            voiceVisualizer.style.opacity = '1';
+            listeningIndicator.style.display = 'block';
+            waveform.style.display = 'block';
             recognition.start();
         }
 
         function stopListening() {
             if (!isListening) return;
             isListening = false;
-            listeningIndicator.classList.remove('active');
-            voiceVisualizer.style.opacity = '0';
+            listeningIndicator.style.display = 'none';
+            waveform.style.display = 'none';
             recognition.stop();
         }
 
         function handleVoiceCommand(command) {
             if (!userName) {
                 userName = command;
-                let greeting = language === 'ne' ? `नमस्ते, ${userName}! तपाईंलाई कसरी मद्दत गर्न सक्छु?` : `Hello, ${userName}! How can I help you today?`;
-                caption.textContent = greeting;
-                speak(greeting);
+                localStorage.setItem('userName', userName);
+                greetUser();
             } else {
-                let responseText = '';
-                let suggestions = [];
-                if (command.toLowerCase().includes('good morning')) {
-                    responseText = language === 'ne' ? 'सुप्रभात! के म तपाईंलाई केहि मद्दत गर्न सक्छु?' : 'Good morning! How can I assist you today?';
-                    suggestions = [language === 'ne' ? 'मलाई मौसम बताउनुहोस्' : 'Tell me the weather', language === 'ne' ? 'मलाई समाचार बताउनुहोस्' : 'Tell me the news'];
-                } else if (command.toLowerCase().includes('thank you')) {
-                    responseText = language === 'ne' ? 'धन्यवाद! तपाईलाई अझै केहि चाहिन्छ भने मलाई भन्नुहोस्।' : 'Thank you! If you need anything else, just let me know.';
-                } else {
-                    responseText = language === 'ne' ? 'माफ गर्नुहोस्, मैले बुझिन। कृपया पुन: प्रयास गर्नुहोस्।' : 'Sorry, I didn’t understand that. Please try again.';
-                }
-
-                showResponse(responseText, suggestions);
-                speak(responseText);
+                processCommand(command);
             }
         }
 
-        function handleTextInput() {
-            let inputText = textInput.value.trim();
-            if (inputText) {
-                handleVoiceCommand(inputText);
-                textInput.value = '';
-            }
+        function greetUser() {
+            let greeting = language === 'ne' ? `नमस्ते, ${userName}! तपाईंलाई कसरी मद्दत गर्न सक्छु?` : `Hello, ${userName}! How can I help you today?`;
+            caption.textContent = greeting;
+            speak(greeting);
+            startListening();
         }
 
-        function showResponse(message, suggestions) {
-            responseMessage.textContent = message;
-            responseFrame.classList.add('active');
-            if (suggestions.length > 0) {
-                suggestionsContainer.innerHTML = '';
-                suggestions.forEach(suggestion => {
-                    let button = document.createElement('button');
-                    button.textContent = suggestion;
-                    button.className = 'suggestion-button';
-                    button.onclick = () => handleVoiceCommand(suggestion);
-                    suggestionsContainer.appendChild(button);
-                });
-            }
-        }
-
-        function closeResponse() {
-            responseFrame.classList.remove('active');
-            suggestionsContainer.innerHTML = '';
+        function requestUserName() {
+            caption.textContent = language === 'ne' ? 'तपाईंको नाम बताउनुहोस्।' : 'Please tell me your name.';
+            speak(caption.textContent);
+            startListening();
         }
 
         recognition.onresult = function(event) {
-            const command = event.results[0][0].transcript;
+            let transcript = event.results[0][0].transcript.trim();
+            handleVoiceCommand(transcript);
             stopListening();
-            handleVoiceCommand(command);
-        }
+        };
 
         recognition.onend = function() {
             stopListening();
+        };
+
+        function processCommand(command) {
+            let response;
+            switch (command.toLowerCase()) {
+                case 'time':
+                    response = new Date().toLocaleTimeString();
+                    break;
+                case 'date':
+                    response = new Date().toLocaleDateString();
+                    break;
+                case 'how are you':
+                    response = language === 'ne' ? 'म राम्रो छु, धन्यवाद। तपाईंलाई कस्तो छ?' : 'I am good, thank you. How are you?';
+                    break;
+                default:
+                    response = language === 'ne' ? 'मलाई बुझिएन। कृपया फेरि प्रयास गर्नुहोस्।' : 'I did not understand that. Please try again.';
+                    break;
+            }
+            showResponse(response);
+            speak(response);
+            startListening();
+        }
+
+        function showResponse(text) {
+            responseMessage.textContent = text;
+            responseFrame.style.display = 'block';
+        }
+
+        function closeResponse() {
+            responseFrame.style.display = 'none';
+            textInput.value = '';
+        }
+
+        function handleTextInput() {
+            let text = textInput.value.trim();
+            if (text) {
+                handleVoiceCommand(text);
+            }
         }
     </script>
 </body>
