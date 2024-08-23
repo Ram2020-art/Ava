@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Custom Knowledge Base Voice Assistant</title>
+  <title>Advanced Voice Assistant</title>
   <style>
     body {
       margin: 0;
@@ -191,6 +191,7 @@
       support: 'For support, please visit our support page or email us directly.',
       faq: 'Frequently asked questions are available on our FAQ page.',
       noInput: 'I didn’t hear anything. Can you please repeat?',
+      fallback: 'I’m not sure about that. Can you please provide more details?'
     };
 
     function getRandomResponse(responses) {
@@ -199,7 +200,7 @@
     }
 
     function handleVoiceCommand(command) {
-      let responseText = responses.noInput;
+      let responseText = responses.fallback;
 
       if (command.includes('about')) {
         responseText = responses.about;
@@ -245,6 +246,8 @@
       }
 
       const utterance = new SpeechSynthesisUtterance(responseText);
+      utterance.pitch = 1.1; // Adjust pitch
+      utterance.rate = 1;   // Adjust rate
       synthesis.speak(utterance);
 
       responseFrame.classList.add('active');
