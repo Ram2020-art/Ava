@@ -198,6 +198,7 @@
         recognition.onresult = function(event) {
             const command = event.results[0][0].transcript;
             stopListening();
+            caption.textContent = `तपाईंले भने: "${command}"`;
             handleVoiceCommand(command);
         };
 
@@ -206,16 +207,20 @@
             showResponse('माफ गर्नुहोस्, केही समस्या भयो। कृपया फेरि प्रयास गर्नुहोस्।');
         };
 
-        // Start listening automatically
-        setTimeout(startListening, 1000);
+        function checkForInput() {
+            setTimeout(function() {
+                if (isListening) {
+                    stopListening();
+                    showResponse('म तपाईंलाई केही पनि सुनिरहेको छैन। कृपया प्रयास गर्नुहोस्।');
+                }
+            }, 5000);
+        }
 
-        // Show default response if no input within 5 seconds
-        setTimeout(function() {
-            if (isListening) {
-                stopListening();
-                showResponse('म तपाईंलाई केही पनि सुनिरहेको छैन। कृपया प्रयास गर्नुहोस्।');
-            }
-        }, 5000);
+        // Start listening automatically and check for input
+        setTimeout(() => {
+            startListening();
+            checkForInput();
+        }, 1000);
     </script>
 </body>
 </html>
