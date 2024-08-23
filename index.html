@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Voice Assistant</title>
+    <title>Chatbot Assistant</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -20,6 +20,9 @@
             max-width: 600px;
             width: 100%;
             text-align: center;
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
         }
         header {
             margin-bottom: 20px;
@@ -76,12 +79,11 @@
 <body>
     <div class="container">
         <header>
-            <button id="lang-toggle">EN</button>
-            <h1>Voice Assistant</h1>
+            <h1>Chatbot Assistant</h1>
         </header>
         <main>
-            <p id="prompt">Please tell me your name:</p>
-            <textarea id="text-input" placeholder="Type your name here..."></textarea>
+            <p id="prompt">Say "Hello" or type your message below:</p>
+            <textarea id="text-input" placeholder="Type your message here..."></textarea>
             <button id="voice-button">🎙️</button>
             <div id="response"></div>
             <div id="suggestions"></div>
@@ -92,15 +94,9 @@
     </div>
 
     <script>
-        let language = 'en'; // Default language
-        const promptText = {
-            en: "Please tell me your name:",
-            ne: "कृपया आफ्नो नाम भन्नुहोस्:"
-        };
-        const responseText = {
-            en: "Hello, ",
-            ne: "नमस्ते, "
-        };
+        let hasGreeted = false; // Flag to track if the user has been greeted
+        const promptText = "Say 'Hello' or type your message below:";
+        const greetingText = "Hello! How can I assist you today?";
 
         const promptElement = document.getElementById('prompt');
         const responseDiv = document.getElementById('response');
@@ -108,7 +104,6 @@
         const voiceButton = document.getElementById('voice-button');
         const timeoutNotification = document.getElementById('timeout-notification');
         const suggestionsDiv = document.getElementById('suggestions');
-        const langToggle = document.getElementById('lang-toggle');
 
         let timeoutId;
 
@@ -136,44 +131,44 @@
             handleTextInput();
         });
 
-        langToggle.addEventListener('click', () => {
-            language = (language === 'en') ? 'ne' : 'en';
-            langToggle.textContent = (language === 'en') ? 'EN' : 'NE';
-            promptElement.textContent = promptText[language];
-            handleTextInput();
-        });
-
         function handleTextInput() {
             clearTimeout(timeoutId);
             timeoutNotification.style.display = 'none';
 
-            const userName = textInput.value.trim();
-            if (userName) {
-                const greeting = responseText[language] + userName + '!';
-                responseDiv.textContent = greeting;
-                speakText(greeting);
-                updateSuggestions(userName);
+            const userInput = textInput.value.trim().toLowerCase();
+            if (userInput) {
+                if (!hasGreeted) {
+                    const greeting = greetingText;
+                    responseDiv.textContent = greeting;
+                    speakText(greeting);
+                    hasGreeted = true;
+                } else {
+                    const response = `You said: ${userInput}`;
+                    responseDiv.textContent = response;
+                    speakText(response);
+                    updateSuggestions(userInput);
+                }
             }
         }
 
         function speakText(text) {
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = (language === 'en') ? 'en-US' : 'ne-NP';
+            utterance.lang = 'en-US';
             window.speechSynthesis.speak(utterance);
         }
 
         function updateSuggestions(input) {
             // Simulated suggestions based on the input
             const suggestions = [
-                `Did you mean ${input}?`,
-                `How about ${input}?`,
-                `Try ${input} instead.`
+                `Did you mean "${input}"?`,
+                `How about "${input}"?`,
+                `Try "${input}" instead.`
             ];
             suggestionsDiv.innerHTML = suggestions.map(s => `<p>${s}</p>`).join('');
         }
 
-        // Initialize with prompt text
-        promptElement.textContent = promptText[language];
+        // Initial prompt
+        promptElement.textContent = promptText;
     </script>
 </body>
 </html>
