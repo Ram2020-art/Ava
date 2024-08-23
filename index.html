@@ -1,93 +1,225 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Felix - Personal Assistant</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #333;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .centered-pen {
-            text-align: center;
-        }
-        .display-3 {
-            font-size: 2.5em;
-            margin-bottom: 0.5em;
-        }
-        .lead {
-            font-size: 1.25em;
-        }
-        .personal-assistant {
-            position: relative;
-            margin-top: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            width: 100%;
-        }
-        .felix {
-            position: absolute;
-            bottom: 50px;
-            width: 110px;
-            height: 95px;
-            border-radius: 45%;
-            border: 3px solid #fff;
-            box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-            animation: breathe-and-jump 3s linear infinite;
-            cursor: pointer;
-            z-index: 1;
-        }
-        .eyes {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
-        }
-        .eye {
-            width: 20px;
-            height: 20px;
-            background-color: #fff;
-            border-radius: 50%;
-        }
-        @keyframes breathe-and-jump {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-10px);
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Voice Assistant with Felix</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #e0e0e0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .personal-assistant {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      width: 100%;
+      text-align: center;
+    }
+
+    .felix {
+      position: absolute;
+      bottom: 50px;
+      width: 110px;
+      height: 95px;
+      border-radius: 45%;
+      border: 3px solid #fff;
+      box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+      animation: breathe-and-jump 3s linear infinite;
+      cursor: pointer;
+      z-index: 1;
+      background: linear-gradient(to bottom, #5fc, #1a8);
+    }
+
+    .felix::before {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      width: calc(100% + 3px);
+      height: calc(100% + 2px);
+      background: linear-gradient(to bottom, #5fc, #1a8);
+      border-radius: 45%;
+      opacity: 0;
+      transition: 0.3s linear all;
+    }
+
+    .felix.active::before {
+      opacity: 1;
+    }
+
+    .felix > .eyes {
+      position: relative;
+    }
+
+    .felix > .eyes > .eye {
+      position: absolute;
+      top: 20px;
+      width: 20px;
+      height: 25px;
+      border-radius: 15px;
+      background-color: #fff;
+      box-shadow: 0 0 7px rgba(255, 255, 255, 0.5);
+      animation: blink 5s linear infinite;
+    }
+
+    .felix > .eyes > .eye.left { left: 25%; }
+    .felix > .eyes > .eye.right { right: 25%; }
+
+    .response-frame {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #000c;
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.3s linear;
+      color: #fff;
+    }
+
+    .response-frame.active {
+      z-index: 1000;
+      opacity: 1;
+    }
+
+    .response-frame > .lead {
+      padding: 10px;
+      border-radius: 5px;
+      background-color: #333;
+      font-size: 18px;
+    }
+
+    .response-frame > .fas {
+      width: 50px;
+      height: 50px;
+      font-size: 25px;
+      line-height: 45px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 10px #fff, 0 0 5px #fff inset;
+      transition: 0.3s linear all;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .response-frame > .fas:hover {
+      border: 2px solid #f55;
+      box-shadow: 0 0 15px #f55, 0 0 5px #f55 inset;
+      color: #f55;
+    }
+
+    @keyframes blink {
+      0%, 100% { transform: scale(1, 0.05); }
+      5%, 95% { transform: scale(1, 1); }
+    }
+
+    @keyframes breathe-and-jump {
+      0%, 40%, 80%, 100% { height: 95px; transform: translateY(0); }
+      20%, 60%, 70%, 90% { height: 100px; transform: translateY(-5px); }
+    }
+  </style>
 </head>
 <body>
-    <div id="primary-content" class="centered-pen">
-        <h1 class="display-3">Hello there!</h1>
-        <p class="lead">Meet Felix, your new personal assistant!</p>
-        <div class="personal-assistant">
-            <div id="felix" class="felix" onclick="activateFelix();">
-                <div class="eyes">
-                    <div class="eye left"></div>
-                    <div class="eye right"></div>
-                </div>
-            </div>
-        </div>
-        <div id="response-frame" class="response-frame">
-            <p id="response-message" class="lead"></p>
-        </div>
+  <div class="personal-assistant">
+    <div id="felix" class="felix">
+      <div class="eyes">
+        <div class="eye left"></div>
+        <div class="eye right"></div>
+      </div>
     </div>
-    <script>
-        function activateFelix() {
-            document.getElementById("response-message").textContent = "Felix is now activated!";
-        }
-    </script>
+    <div class="response-frame">
+      <div class="lead">Listening...</div>
+      <div class="fas">&#xf057;</div>
+    </div>
+  </div>
+
+  <script>
+    if (!('webkitSpeechRecognition' in window) || !('speechSynthesis' in window)) {
+      alert('Speech recognition or synthesis not supported in this browser.');
+    }
+
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    const synthesis = window.speechSynthesis;
+
+    const felix = document.getElementById('felix');
+    const responseFrame = document.querySelector('.response-frame');
+    const closeBtn = responseFrame.querySelector('.fas');
+
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+    recognition.continuous = true;
+
+    // List of responses for 'hello'
+    const helloResponses = [
+      'Hey there! How can I assist you today?',
+      'Hello! What can I do for you?',
+      'Hi! Need help with something?',
+      'Greetings! How can I help?'
+    ];
+
+    // Function to get a random response
+    function getRandomResponse(responses) {
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript.toLowerCase();
+      console.log('User said:', transcript);
+
+      if (transcript.includes('hello')) {
+        const response = new SpeechSynthesisUtterance(getRandomResponse(helloResponses));
+        synthesis.speak(response);
+        responseFrame.classList.add('active');
+        felix.classList.add('active');
+      } else if (transcript.includes('activate')) {
+        felix.classList.add('active');
+        const response = new SpeechSynthesisUtterance('Felix is now active!');
+        synthesis.speak(response);
+      } else if (transcript.includes('deactivate')) {
+        felix.classList.remove('active');
+        const response = new SpeechSynthesisUtterance('Felix is now inactive.');
+        synthesis.speak(response);
+      } else if (transcript.includes('thank you')) {
+        const response = new SpeechSynthesisUtterance('You\'re welcome!');
+        synthesis.speak(response);
+      } else if (transcript.includes('what can you do')) {
+        const response = new SpeechSynthesisUtterance('I can help with various tasks like answering questions, providing information, and more.');
+        synthesis.speak(response);
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+    };
+
+    recognition.onend = () => {
+      recognition.start(); // Restart recognition when it ends
+    };
+
+    closeBtn.addEventListener('click', () => {
+      responseFrame.classList.remove('active');
+      synthesis.cancel(); // Stop any ongoing speech synthesis
+    });
+
+    // Start voice recognition
+    recognition.start();
+  </script>
 </body>
 </html>
