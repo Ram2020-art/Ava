@@ -1,242 +1,221 @@
 <!DOCTYPE html>
 <html lang="ne">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Voice Assistant in Nepali</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #121212;
-      color: #e0e0e0;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .assistant-container {
-      text-align: center;
-      max-width: 600px;
-      width: 100%;
-      background: #1e1e1e;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    }
-    .caption-frame, .response-frame {
-      margin: 10px 0;
-      padding: 10px;
-      background: #333;
-      border-radius: 5px;
-      color: #fff;
-      font-size: 1.2em;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.5s, transform 0.5s;
-    }
-    .caption-frame.show, .response-frame.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .suggestions-frame {
-      margin-top: 20px;
-      display: none;
-    }
-    .suggestions-frame.show {
-      display: block;
-    }
-    .suggestions-frame .suggestions button {
-      background: #444;
-      border: none;
-      color: #fff;
-      padding: 10px;
-      margin: 5px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .suggestions-frame .suggestions button:hover {
-      background: #555;
-    }
-    .loading {
-      font-size: 1.2em;
-      margin: 20px 0;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Assistant</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .assistant-container {
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            padding: 20px;
+        }
+        .header {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        .caption, .response {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #b0bec5;
+        }
+        .response-frame {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            color: #ffffff;
+        }
+        .response-frame.active {
+            opacity: 1;
+        }
+        .response-content {
+            text-align: center;
+            padding: 20px;
+            background: #333333;
+            border-radius: 10px;
+        }
+        .response-content p {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        .response-content button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #ffffff;
+            background: #2196F3;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .response-content button:hover {
+            background: #1E88E5;
+        }
+        .listening-indicator {
+            display: none;
+            font-size: 1.2em;
+            color: #ff5722;
+            margin-top: 20px;
+        }
+        .listening-indicator.active {
+            display: block;
+        }
+        .input-suggestions {
+            margin-top: 20px;
+        }
+        .suggestion-button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #ffffff;
+            background: #4caf50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .suggestion-button:hover {
+            background: #45a049;
+        }
+    </style>
 </head>
 <body>
-  <div class="assistant-container">
-    <div class="caption-frame" id="caption-frame">
-      तपाईलाई नमस्कार भन्नुहोस्...
+    <div class="assistant-container">
+        <div class="header">नमस्ते! तपाईंलाई म कसरी मद्दत गर्न सक्छु?</div>
+        <div id="caption" class="caption">तपाईंको नाम बताउनुहोस्।</div>
+        <div id="response-frame" class="response-frame">
+            <div class="response-content">
+                <p id="response-message">सन्देश यहाँ आउँछ</p>
+                <button onclick="closeResponse()">ठिक छ</button>
+            </div>
+        </div>
+        <div id="listening" class="listening-indicator">सुनिरहेको छु...</div>
+        <div id="suggestions" class="input-suggestions"></div>
     </div>
-    <div class="response-frame" id="response-frame">
-      प्रक्रिया गर्दैछ...
-    </div>
-    <div class="suggestions-frame" id="suggestions-frame">
-      <div class="suggestions"></div>
-    </div>
-    <div class="loading" id="loading-frame">
-      सुन्दै छ...
-    </div>
-  </div>
 
-  <script>
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    const synthesis = window.speechSynthesis;
-    const responseFrame = document.getElementById('response-frame');
-    const captionFrame = document.getElementById('caption-frame');
-    const suggestionsFrame = document.getElementById('suggestions-frame');
-    const suggestionsContainer = suggestionsFrame.querySelector('.suggestions');
-    const loadingFrame = document.getElementById('loading-frame');
+    <script>
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        const synthesis = window.speechSynthesis;
 
-    recognition.interimResults = true;
-    recognition.lang = 'ne-NP'; // Set language to Nepali
-    recognition.continuous = true;
+        let userName = '';
+        let isListening = false;
+        let responseFrame = document.getElementById('response-frame');
+        let responseMessage = document.getElementById('response-message');
+        let caption = document.getElementById('caption');
+        let listeningIndicator = document.getElementById('listening');
+        let suggestionsContainer = document.getElementById('suggestions');
 
-    let isListening = false;
-    let currentCommand = '';
-    let silenceTimeout;
-    let userName = '';
-    
-    function updateCaption(text) {
-      captionFrame.textContent = text;
-      captionFrame.classList.add('show');
-      setTimeout(() => {
-        captionFrame.classList.remove('show');
-      }, 3000);
-    }
+        recognition.lang = 'ne-NP'; // Nepali language
+        recognition.interimResults = false;
+        recognition.continuous = false;
 
-    function updateSuggestions(commands) {
-      suggestionsContainer.innerHTML = '';
-      commands.forEach(command => {
-        const button = document.createElement('button');
-        button.textContent = command;
-        button.onclick = () => {
-          processCommand(command.toLowerCase());
+        function speak(text) {
+            let utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ne-NP'; // Nepali language
+            synthesis.speak(utterance);
+        }
+
+        function startListening() {
+            if (isListening) return;
+            isListening = true;
+            listeningIndicator.classList.add('active');
+            recognition.start();
+        }
+
+        function stopListening() {
+            if (!isListening) return;
+            isListening = false;
+            listeningIndicator.classList.remove('active');
+            recognition.stop();
+        }
+
+        function handleVoiceCommand(command) {
+            if (!userName) {
+                userName = command;
+                caption.textContent = `नमस्ते, ${userName}! तपाईंलाई कसरी मद्दत गर्न सक्छु?`;
+                speak(`नमस्ते, ${userName}! तपाईंलाई कसरी मद्दत गर्न सक्छु?`);
+            } else {
+                let responseText = '';
+                let suggestions = [];
+                switch (command.toLowerCase()) {
+                    case 'सुप्रभात':
+                        responseText = 'सुप्रभात! के म तपाईंलाई केहि मद्दत गर्न सक्छु?';
+                        suggestions = ['मलाई मौसम बताउनुहोस्', 'मलाई समाचार बताउनुहोस्'];
+                        break;
+                    case 'धन्यवाद':
+                        responseText = 'धन्यवाद! तपाईलाई अझै केहि चाहिन्छ भने मलाई भन्नुहोस्।';
+                        break;
+                    default:
+                        responseText = 'माफ गर्नुहोस्, मैले बुझ्न सकेन। कृपया फेरि प्रयास गर्नुहोस्।';
+                        break;
+                }
+                showResponse(responseText, suggestions);
+            }
+        }
+
+        function showResponse(message, suggestions = []) {
+            responseMessage.textContent = message;
+            speak(message);
+            responseFrame.classList.add('active');
+            updateSuggestions(suggestions);
+        }
+
+        function updateSuggestions(suggestions) {
+            suggestionsContainer.innerHTML = '';
+            suggestions.forEach(suggestion => {
+                let button = document.createElement('button');
+                button.className = 'suggestion-button';
+                button.textContent = suggestion;
+                button.onclick = () => handleVoiceCommand(suggestion);
+                suggestionsContainer.appendChild(button);
+            });
+        }
+
+        function closeResponse() {
+            responseFrame.classList.remove('active');
+        }
+
+        recognition.onresult = function(event) {
+            const command = event.results[0][0].transcript;
+            stopListening();
+            handleVoiceCommand(command);
         };
-        suggestionsContainer.appendChild(button);
-      });
-      suggestionsFrame.classList.add('show');
-    }
 
-    function processCommand(command) {
-      let responseText = '';
+        recognition.onerror = function(event) {
+            stopListening();
+            showResponse('माफ गर्नुहोस्, केही समस्या भयो। कृपया फेरि प्रयास गर्नुहोस्।');
+        };
 
-      if (command.includes('के छ')) {
-        responseText = 'म ठिक छु, धन्यवाद!';
-      } else if (command.includes('तपाईंको नाम के हो')) {
-        responseText = `मेरो नाम Assistant हो। तपाईंको नाम के हो?`;
-      } else if (command.includes('म राम्रो छु')) {
-        responseText = `म खुशी छु कि तपाईं राम्रो हुनुहुन्छ!`;
-      } else {
-        responseText = `म त्यस्तो बुझ्न सक्दिन। कृपया दोहोर्याउनुहोस्।`;
-      }
+        // Start listening automatically
+        setTimeout(startListening, 1000);
 
-      return responseText;
-    }
-
-    function speakNepali(text) {
-      const voices = synthesis.getVoices();
-      const nepaliVoice = voices.find(voice => voice.lang === 'ne-NP');
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.voice = nepaliVoice;
-      utterance.pitch = 1;
-      utterance.rate = 1;
-
-      synthesis.speak(utterance);
-    }
-
-    function handleVoiceCommand(command) {
-      let responseText = '';
-
-      if (!userName) {
-        userName = command;
-        responseText = `नमस्ते, ${userName}! तपाईंलाई कस्तो छ?`;
-        updateCaption(`तपाईंलाई भेट्न खुशी लाग्यो, ${userName}.`);
-      } else {
-        responseText = processCommand(command);
-        updateCaption(`तपाईंले भन्नुभयो: ${command}`);
-      }
-
-      responseFrame.textContent = 'प्रकृया हुँदैछ...';
-      responseFrame.classList.add('show');
-
-      if (synthesis.speaking) {
-        synthesis.cancel();
-      }
-
-      speakNepali(responseText);
-
-      clearTimeout(silenceTimeout);
-    }
-
-    function handleNoInput() {
-      updateCaption('मैले केही सुन्न सकेन। कृपया दोहोर्याउनुहोस्।');
-      responseFrame.textContent = 'प्रकृया गर्दैछ...';
-      responseFrame.classList.add('show');
-      speakNepali('मैले केही सुन्न सकेन। कृपया दोहोर्याउनुहोस्।');
-      setTimeout(() => {
-        responseFrame.classList.remove('show');
-        captionFrame.textContent = '';
-        suggestionsFrame.classList.remove('show');
-        startListening();
-      }, 3000);
-    }
-
-    function startListening() {
-      if (isListening) return;
-
-      isListening = true;
-      recognition.start();
-      loadingFrame.style.display = 'block';
-      captionFrame.textContent = 'सुनिरहेका छौं...';
-      suggestionsFrame.classList.remove('show');
-
-      recognition.onresult = (event) => {
-        let transcript = '';
-        for (const result of event.results) {
-          transcript += result[0].transcript;
-        }
-        currentCommand = transcript.toLowerCase();
-
-        if (userName) {
-          handleVoiceCommand(currentCommand);
-        } else {
-          handleVoiceCommand(currentCommand);
-        }
-
-        if (event.results[0].isFinal) {
-          isListening = false;
-        }
-      };
-
-      recognition.onspeechend = () => {
-        clearTimeout(silenceTimeout);
-        silenceTimeout = setTimeout(() => {
-          recognition.stop();
-          isListening = false;
-          loadingFrame.style.display = 'none';
-          handleNoInput();
+        // Show default response if no input within 5 seconds
+        setTimeout(function() {
+            if (isListening) {
+                stopListening();
+                showResponse('म तपाईंलाई केही पनि सुनिरहेको छैन। कृपया प्रयास गर्नुहोस्।');
+            }
         }, 5000);
-      };
-
-      recognition.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
-        startListening();
-      };
-    }
-
-    function askForName() {
-      updateCaption('तपाईंको नाम के हो?');
-      speakNepali('नमस्ते! कृपया तपाईंको नाम भन्नुहोस्।');
-      startListening();
-    }
-
-    window.onload = () => {
-      askForName();
-    };
-  </script>
+    </script>
 </body>
 </html>
