@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Felix - Personal Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #333;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .centered-pen {
+            text-align: center;
+        }
+        .display-3 {
+            font-size: 2.5em;
+            margin-bottom: 0.5em;
+        }
+        .lead {
+            font-size: 1.25em;
+        }
+        .personal-assistant {
+            position: relative;
+            margin-top: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            width: 100%;
+        }
+        .felix {
+            position: absolute;
+            bottom: 50px;
+            width: 110px;
+            height: 95px;
+            border-radius: 45%;
+            border: 3px solid #fff;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+            animation: breathe-and-jump 3s linear infinite;
+            cursor: pointer;
+            z-index: 1;
+        }
+        .eyes {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .eye {
+            width: 20px;
+            height: 20px;
+            background-color: #fff;
+            border-radius: 50%;
+        }
+        @keyframes breathe-and-jump {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="primary-content" class="centered-pen">
+        <h1 class="display-3">Hello there!</h1>
+        <p class="lead">Meet Felix, your new personal assistant!</p>
+        <div class="personal-assistant">
+            <div id="felix" class="felix" onclick="activateFelix();">
+                <div class="eyes">
+                    <div class="eye left"></div>
+                    <div class="eye right"></div>
+                </div>
+            </div>
+        </div>
+        <div id="response-frame" class="response-frame">
+            <p id="response-message" class="lead"></p>
+        </div>
+    </div>
+    <script>
+        function activateFelix() {
+            document.getElementById("response-message").textContent = "Felix is now activated!";
+        }
+    </script>
+</body>
+</html>
