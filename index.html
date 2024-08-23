@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Advanced Voice Assistant with Felix</title>
+  <title>Advanced Voice Assistant with Wake-Up and Sleep Commands</title>
   <style>
     body {
       margin: 0;
@@ -172,6 +172,7 @@
     recognition.continuous = true;
 
     let silenceTimeout;
+    let isActive = false;
 
     const responses = {
       hello: [
@@ -199,7 +200,7 @@
 
     function handleVoiceCommand(command) {
       let responseText = responses.unknown;
-      
+
       if (command.includes('hello')) {
         responseText = getRandomResponse(responses.hello);
       } else if (command.includes('weather')) {
@@ -211,9 +212,11 @@
       } else if (command.includes('activate')) {
         felix.classList.add('active');
         responseText = responses.activate;
+        isActive = true;
       } else if (command.includes('deactivate')) {
         felix.classList.remove('active');
         responseText = responses.deactivate;
+        isActive = false;
       } else if (command.includes('help') || command.includes('what can you do')) {
         responseText = responses.help;
       }
@@ -222,7 +225,9 @@
     }
 
     function startListening() {
-      recognition.start();
+      if (isActive) {
+        recognition.start();
+      }
     }
 
     recognition.onresult = (event) => {
@@ -254,11 +259,14 @@
       }
 
       // Set a timeout to start listening again after a pause
-      silenceTimeout = setTimeout(startListening, 3000); // Restart listening after 3 seconds of silence
+      silenceTimeout = setTimeout(() => {
+        startListening();
+      }, 1000);
     };
 
     recognition.onerror = (event) => {
       console.error('Speech recognition error:', event.error);
+      startListening();
     };
 
     recognition.onend = () => {
@@ -274,7 +282,29 @@
       captionFrame.classList.remove('active');
     };
 
-    startListening(); // Start listening on page load
+    function activateAssistant() {
+      isActive = true;
+      felix.classList.add('active');
+      startListening();
+    }
+
+    function deactivateAssistant() {
+      isActive = false;
+      felix.classList.remove('active');
+      recognition.stop();
+    }
+
+    // Initial state
+    deactivateAssistant();
+
+    // Command to start listening
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        activateAssistant();
+      } else if (event.key === 'Escape') {
+        deactivateAssistant();
+      }
+    });
   </script>
 </body>
 </html>
