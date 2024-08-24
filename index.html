@@ -6,109 +6,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced Voice Assistant</title>
     <style>
+        /* Add your advanced CSS styling and animations here */
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #1e1e1e;
+            font-family: Arial, sans-serif;
+            background: #1e1e1e;
             color: #ffffff;
-            margin: 0;
-            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            overflow: hidden;
+            margin: 0;
         }
 
         .assistant-container {
+            width: 80%;
+            max-width: 600px;
+            padding: 20px;
+            background: #333;
+            border-radius: 10px;
             text-align: center;
-            max-width: 500px;
-            width: 100%;
-            padding: 30px;
-            border-radius: 15px;
-            background-color: #333;
-            box-shadow: 0px 0px 30px rgba(0, 0, 0, 0.6);
-            animation: fadeIn 1s ease-in-out;
         }
 
-        .header {
-            font-size: 1.8em;
-            margin-bottom: 25px;
-            animation: slideIn 1s ease-in-out;
+        .language-selector button {
+            background: #444;
+            color: #fff;
+            padding: 10px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
         }
 
-        .caption {
-            font-size: 1.4em;
-            margin-bottom: 25px;
-            animation: slideIn 1s ease-in-out 0.2s;
+        .language-selector button:hover {
+            background: #555;
+        }
+
+        .listening-indicator {
+            display: none;
+            margin-top: 20px;
+            font-size: 18px;
+            color: #00ff00;
         }
 
         .response-frame {
             display: none;
-            margin-top: 25px;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: #444;
-            animation: slideIn 1s ease-in-out 0.4s;
-        }
-
-        .listening-indicator {
-            margin-top: 25px;
-            font-size: 1.3em;
-            color: #00ff00;
-            animation: pulse 1s infinite;
-        }
-
-        .language-selector {
-            margin-bottom: 25px;
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        .language-selector button {
-            background-color: #444;
-            color: #fff;
-            border: none;
-            padding: 12px 25px;
-            margin: 5px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.3s ease;
-        }
-
-        .language-selector button:hover {
-            background-color: #555;
-            transform: scale(1.05);
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateY(-20px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.1);
-            }
-            100% {
-                transform: scale(1);
-            }
+            margin-top: 20px;
+            font-size: 16px;
         }
     </style>
 </head>
@@ -180,41 +124,18 @@
             startListening();
         };
 
-        function handleVoiceCommand(command) {
+        async function handleVoiceCommand(command) {
             if (!userName) {
                 userName = command;
                 let greeting = language === 'ne' ? `नमस्ते, ${userName}! तपाईंलाई कसरी मद्दत गर्न सक्छु?` : `Hello, ${userName}! How can I help you today?`;
                 document.getElementById('caption').textContent = greeting;
                 speak(greeting);
             } else {
-                processCommand(command);
+                const response = await fetch(`/api/assistant?command=${encodeURIComponent(command)}&lang=${language}`);
+                const data = await response.json();
+                showResponse(data.message);
+                speak(data.message);
             }
-        }
-
-        function processCommand(command) {
-            let response;
-            switch (command.toLowerCase()) {
-                case 'time':
-                    response = new Date().toLocaleTimeString();
-                    break;
-                case 'date':
-                    response = new Date().toLocaleDateString();
-                    break;
-                case 'how are you':
-                    response = language === 'ne' ? 'म राम्रो छु, धन्यवाद। तपाईंलाई कस्तो छ?' : 'I am good, thank you. How are you?';
-                    break;
-                case 'thank you':
-                    response = language === 'ne' ? 'तपाईंलाई स्वागत छ।' : 'You\'re welcome.';
-                    break;
-                case 'goodbye':
-                    response = language === 'ne' ? 'अलविदा!' : 'Goodbye!';
-                    break;
-                default:
-                    response = language === 'ne' ? 'मलाई बुझिएन। कृपया फेरि प्रयास गर्नुहोस्।' : 'I did not understand that. Please try again.';
-                    break;
-            }
-            showResponse(response);
-            speak(response);
         }
 
         function showResponse(text) {
