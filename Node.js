@@ -7,36 +7,35 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.static('public'));
 
-app.get('/api/assistant', async (req, res) => {
-    const { command, lang } = req.query;
-    let responseMessage = '';
-
-    if (command.toLowerCase().includes('weather')) {
-        responseMessage = await getWeather();
-    } else {
-        responseMessage = getFallbackResponse(command, lang);
+app.get('/api/chatbot', async (req, res) => {
+    const { command } = req.query;
+    try {
+        let responseMessage = '';
+        
+        if (command.toLowerCase().includes('weather')) {
+            responseMessage = await getWeather();
+        } else {
+            responseMessage = `You said: "${command}". I'm here to help!`;
+        }
+        
+        res.json({ message: responseMessage });
+    } catch (error) {
+        console.error('Error processing command:', error);
+        res.status(500).json({ message: 'Sorry, something went wrong. Please try again.' });
     }
-
-    res.json({ message: responseMessage });
 });
-
-function getFallbackResponse(command, lang) {
-    if (lang === 'ne') {
-        return `तपाईंले भने: "${command}". म तपाईंलाई यसमा मद्दत गर्न सक्छु।`;
-    }
-    return `You said: "${command}". I can help you with that.`;
-}
 
 async function getWeather() {
     try {
         const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=Kathmandu&units=metric&appid=${process.env.OPENWEATHER_API_KEY}`);
         const data = await response.json();
         if (data.weather) {
-            return `The weather in Kathmandu is ${data.main.temp} degrees Celsius.`;
+            return `The weather in Kathmandu is ${data.main.temp} degrees Celsius with ${data.weather[0].description}.`;
         } else {
             return 'I could not retrieve the weather information.';
         }
     } catch (error) {
+        console.error('Error fetching weather data:', error);
         return 'There was an error fetching the weather data.';
     }
 }
