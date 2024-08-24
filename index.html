@@ -4,9 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Voice Assistant</title>
+    <title>Advanced Chatbot with Voice & Text</title>
     <style>
-        /* Add your advanced CSS styling and animations here */
         body {
             font-family: Arial, sans-serif;
             background: #1e1e1e;
@@ -18,136 +17,220 @@
             margin: 0;
         }
 
-        .assistant-container {
-            width: 80%;
+        .chat-container {
+            width: 90%;
             max-width: 600px;
             padding: 20px;
             background: #333;
             border-radius: 10px;
+            position: relative;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
             text-align: center;
+            margin-bottom: 20px;
         }
 
-        .language-selector button {
+        .chat-box {
+            max-height: 400px;
+            overflow-y: auto;
             background: #444;
-            color: #fff;
-            padding: 10px;
-            margin: 5px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
         }
 
-        .language-selector button:hover {
+        .chat-message {
+            margin-bottom: 15px;
+        }
+
+        .chat-message.user {
+            text-align: right;
+        }
+
+        .chat-message .text {
+            display: inline-block;
+            padding: 10px;
+            border-radius: 10px;
             background: #555;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .chat-message.user .text {
+            background: #007bff;
         }
 
         .listening-indicator {
             display: none;
-            margin-top: 20px;
+            margin-top: 10px;
             font-size: 18px;
             color: #00ff00;
+            text-align: center;
         }
 
-        .response-frame {
-            display: none;
-            margin-top: 20px;
-            font-size: 16px;
+        .input-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-container input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        .input-container button {
+            padding: 10px 15px;
+            background: #007bff;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .input-container button:hover {
+            background: #0056b3;
+        }
+
+        .voice-toggle-container {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .voice-toggle-container label {
+            cursor: pointer;
+            color: #00ff00;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="assistant-container">
-        <div class="language-selector">
-            <button onclick="setLanguage('ne')">नेपाली</button>
-            <button onclick="setLanguage('en')">English</button>
+    <div class="chat-container">
+        <div class="header">
+            <h1>Chatbot with Voice & Text</h1>
         </div>
-        <div class="header" id="header">Hello! How can I help you today?</div>
-        <div id="caption" class="caption">Please tell me your name.</div>
-        <div id="response-frame" class="response-frame">
-            <p id="response-message">Your message will appear here</p>
+        <div class="chat-box" id="chat-box">
+            <!-- Chat messages will appear here -->
         </div>
-        <div id="listening" class="listening-indicator">Listening...</div>
+        <div class="listening-indicator" id="listening-indicator">Listening...</div>
+        <div class="input-container">
+            <input type="text" id="user-input" placeholder="Type your message here...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+        <div class="voice-toggle-container">
+            <label>
+                <input type="checkbox" id="voice-toggle" onclick="toggleVoice()"> Enable Voice
+            </label>
+        </div>
     </div>
 
     <script>
+        const chatBox = document.getElementById('chat-box');
+        const userInput = document.getElementById('user-input');
+        const listeningIndicator = document.getElementById('listening-indicator');
+        const voiceToggle = document.getElementById('voice-toggle');
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         const synthesis = window.speechSynthesis;
-
-        let userName = '';
-        let language = 'en'; // Default language
+        let isVoiceEnabled = false;
 
         recognition.interimResults = false;
         recognition.continuous = false;
 
-        function setLanguage(lang) {
-            language = lang;
-            recognition.lang = lang === 'ne' ? 'ne-NP' : 'en-US';
-            updateText(language);
-            startListening();
-        }
-
-        function updateText(lang) {
-            if (lang === 'ne') {
-                document.getElementById('header').textContent = 'नमस्ते! तपाईंलाई म कसरी मद्दत गर्न सक्छु?';
-                document.getElementById('caption').textContent = 'तपाईंको नाम बताउनुहोस्।';
+        function toggleVoice() {
+            isVoiceEnabled = voiceToggle.checked;
+            if (isVoiceEnabled) {
+                startListening();
             } else {
-                document.getElementById('header').textContent = 'Hello! How can I help you today?';
-                document.getElementById('caption').textContent = 'Please tell me your name.';
+                stopListening();
             }
-            speak(document.getElementById('caption').textContent);
-            startListening();
-        }
-
-        function speak(text) {
-            let utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = language === 'ne' ? 'ne-NP' : 'en-US';
-            synthesis.speak(utterance);
         }
 
         function startListening() {
-            recognition.start();
+            if (isVoiceEnabled) {
+                recognition.start();
+                listeningIndicator.style.display = 'block';
+            }
         }
 
         function stopListening() {
             recognition.stop();
+            listeningIndicator.style.display = 'none';
         }
 
         recognition.onresult = function (event) {
-            let transcript = event.results[0][0].transcript.trim();
-            handleVoiceCommand(transcript);
+            const transcript = event.results[0][0].transcript.trim();
+            displayMessage(transcript, 'user');
+            sendCommandToServer(transcript);
+            stopListening();
+        };
+
+        recognition.onerror = function (event) {
+            handleError(event.error);
             stopListening();
         };
 
         recognition.onend = function () {
-            startListening();
+            if (isVoiceEnabled) {
+                startListening();
+            }
         };
 
-        async function handleVoiceCommand(command) {
-            if (!userName) {
-                userName = command;
-                let greeting = language === 'ne' ? `नमस्ते, ${userName}! तपाईंलाई कसरी मद्दत गर्न सक्छु?` : `Hello, ${userName}! How can I help you today?`;
-                document.getElementById('caption').textContent = greeting;
-                speak(greeting);
-            } else {
-                const response = await fetch(`/api/assistant?command=${encodeURIComponent(command)}&lang=${language}`);
-                const data = await response.json();
-                showResponse(data.message);
-                speak(data.message);
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (message) {
+                displayMessage(message, 'user');
+                sendCommandToServer(message);
+                userInput.value = '';
             }
         }
 
-        function showResponse(text) {
-            document.getElementById('response-message').textContent = text;
-            document.getElementById('response-frame').style.display = 'block';
-            setTimeout(() => {
-                document.getElementById('response-frame').style.display = 'none';
-            }, 3000); // Hide response after 3 seconds
+        function displayMessage(message, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message', sender);
+            messageElement.innerHTML = `<div class="text">${message}</div>`;
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Initialize
-        setLanguage('en'); // Start with English
+        function sendCommandToServer(command) {
+            fetch(`/api/chatbot?command=${encodeURIComponent(command)}`)
+                .then(response => response.json())
+                .then(data => {
+                    displayMessage(data.message, 'bot');
+                    if (isVoiceEnabled) {
+                        speak(data.message);
+                    }
+                })
+                .catch(error => {
+                    handleError(error.message);
+                });
+        }
+
+        function speak(text) {
+            let utterance = new SpeechSynthesisUtterance(text);
+            synthesis.speak(utterance);
+        }
+
+        function handleError(errorMessage) {
+            console.error('Error occurred:', errorMessage);
+            displayMessage('Sorry, something went wrong. Please try again.', 'bot');
+        }
     </script>
 </body>
 
